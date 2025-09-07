@@ -103,18 +103,26 @@ function loop_the_tournament($loops, $brewers_won, $games_played,
 	//print_histogram($brewers_won_total);
 
 	if($silent != 1) {
-		printf("In %d loops, out of %d games, and even after %d, " .
-			"Brewers won the rest %d times, lost the rest %d times " .
-			"and played even %d times (fraction %.5f).\n",
+		printf("In %d loops, out of %d games, and even after %d,\n" .
+			"Brewers won the rest %d times (%.5f),\n" .
+			"lost the rest %d times (%.5f)\n" .
+			"and played even %d times (%.5f).\n",
 			$loops, $no_of_games, $games_played, 
 			$brewers_won_total[$no_of_games - $games_played / 2], 
+			$brewers_won_total[$no_of_games - $games_played / 2] / $loops,
 			$brewers_won_total[$games_played / 2],
+			$brewers_won_total[$games_played / 2] / $loops,
 			$brewers_won_total[$no_of_games / 2],
 			$brewers_won_total[$no_of_games / 2] / $loops);
 	}
 	
 	//print_csv($brewers_won_total);
-	return $brewers_won_total[$no_of_games / 2] / $loops;
+	$return_val = array(
+		$brewers_won_total[$games_played / 2] / $loops,
+		$brewers_won_total[$no_of_games / 2] / $loops,
+		$brewers_won_total[$no_of_games - $games_played / 2] / $loops
+	);
+	return $return_val;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -124,23 +132,45 @@ if($q < 7) {
 	loop_the_tournament($loops, $brewers_won, $games_played,
 		$no_of_games, 0);
 } else {
-	print("      ");
+	$win_string = "      ";
+	$even_string = "      ";
+	$lose_string = "      ";
 	for($m=10;$m<=100;$m+=10) {
-		print("  $m    ");
+		$win_string .= "  $m    ";
+		$even_string .= "  $m    ";
+		$lose_string .= "  $m    ";
 	}
-	print("\n");
+	$win_string .= "\n";
+	$even_string .= "\n";
+	$lose_string .= "\n";
 	for($N=1000;$N<=10000;$N+=1000) {
-		printf("%5d ", $N);
+		$win_string .= sprintf("%5d ", $N);
+		$even_string .= sprintf("%5d ", $N);
+		$lose_string .= sprintf("%5d ", $N);
 		for($m=10;$m<=100;$m+=10) {
 			$no_of_games = $N;
 			$games_played = $N - $m;
 			$brewers_won = $games_played / 2;
 			$frac = loop_the_tournament($loops, $brewers_won,
 				$games_played, $no_of_games, 1);
-			printf("%.5f ", $frac);
+			$win_string .= sprintf("%.5f ", $frac[2]);
+			$even_string .= sprintf("%.5f ", $frac[1]);
+			$lose_string .= sprintf("%.5f ", $frac[0]);
+//			printf("%.5f ", $frac[1]);
+			print(".");
 		}
+		$win_string .= "\n";
+		$even_string .= "\n";
+		$lose_string .= "\n";
 		print("\n");
 	}
+	
+	print("\nWinning.\n");
+	print($win_string);
+	print("\nPlaying even.\n");
+	print($even_string);
+	print("\nLosing.\n");
+	print($lose_string);
 }
 
 ?>
